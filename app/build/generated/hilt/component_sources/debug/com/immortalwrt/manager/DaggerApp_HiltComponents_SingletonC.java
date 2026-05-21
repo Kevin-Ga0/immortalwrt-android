@@ -1,0 +1,898 @@
+package com.immortalwrt.manager;
+
+import android.app.Activity;
+import android.app.Service;
+import android.view.View;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.SavedStateHandle;
+import androidx.lifecycle.ViewModel;
+import com.immortalwrt.manager.core.network.CertificateFingerprintStore;
+import com.immortalwrt.manager.core.network.CertificateTrustManager;
+import com.immortalwrt.manager.core.network.EndpointDiscovery;
+import com.immortalwrt.manager.core.network.NetworkMonitor;
+import com.immortalwrt.manager.core.network.RouterOkHttpClientFactory;
+import com.immortalwrt.manager.core.network.UbusCallIdGenerator;
+import com.immortalwrt.manager.core.network.UbusJsonRpcClient;
+import com.immortalwrt.manager.core.security.AndroidKeystoreSecretStore;
+import com.immortalwrt.manager.core.session.SessionManagerImpl;
+import com.immortalwrt.manager.data.local.AppDatabase;
+import com.immortalwrt.manager.data.local.dao.DiagnosticEventDao;
+import com.immortalwrt.manager.data.local.dao.RouterCacheDao;
+import com.immortalwrt.manager.data.local.dao.RouterCapabilityDao;
+import com.immortalwrt.manager.data.local.dao.RouterDao;
+import com.immortalwrt.manager.data.local.dao.RouterEnvironmentDao;
+import com.immortalwrt.manager.data.remote.NetworkRemoteDataSource;
+import com.immortalwrt.manager.data.repository.CapabilityRepositoryImpl;
+import com.immortalwrt.manager.data.repository.DeviceRepositoryImpl;
+import com.immortalwrt.manager.data.repository.NetworkRepositoryImpl;
+import com.immortalwrt.manager.data.repository.RouterRepositoryImpl;
+import com.immortalwrt.manager.data.repository.SystemRepositoryImpl;
+import com.immortalwrt.manager.di.DatabaseModule_ProvideDatabaseFactory;
+import com.immortalwrt.manager.di.DatabaseModule_ProvideDiagnosticEventDaoFactory;
+import com.immortalwrt.manager.di.DatabaseModule_ProvideRouterCacheDaoFactory;
+import com.immortalwrt.manager.di.DatabaseModule_ProvideRouterCapabilityDaoFactory;
+import com.immortalwrt.manager.di.DatabaseModule_ProvideRouterDaoFactory;
+import com.immortalwrt.manager.di.DatabaseModule_ProvideRouterEnvironmentDaoFactory;
+import com.immortalwrt.manager.ui.screens.dashboard.DashboardViewModel;
+import com.immortalwrt.manager.ui.screens.dashboard.DashboardViewModel_HiltModules;
+import com.immortalwrt.manager.ui.screens.devices.DevicesViewModel;
+import com.immortalwrt.manager.ui.screens.devices.DevicesViewModel_HiltModules;
+import com.immortalwrt.manager.ui.screens.diagnostics.DiagnosticsViewModel;
+import com.immortalwrt.manager.ui.screens.diagnostics.DiagnosticsViewModel_HiltModules;
+import com.immortalwrt.manager.ui.screens.network.NetworkViewModel;
+import com.immortalwrt.manager.ui.screens.network.NetworkViewModel_HiltModules;
+import com.immortalwrt.manager.ui.screens.password.PasswordChangeViewModel;
+import com.immortalwrt.manager.ui.screens.password.PasswordChangeViewModel_HiltModules;
+import com.immortalwrt.manager.ui.screens.reboot.RebootViewModel;
+import com.immortalwrt.manager.ui.screens.reboot.RebootViewModel_HiltModules;
+import com.immortalwrt.manager.ui.screens.router.AddEditRouterViewModel;
+import com.immortalwrt.manager.ui.screens.router.AddEditRouterViewModel_HiltModules;
+import com.immortalwrt.manager.ui.screens.router.RouterListViewModel;
+import com.immortalwrt.manager.ui.screens.router.RouterListViewModel_HiltModules;
+import com.immortalwrt.manager.ui.screens.system.SystemViewModel;
+import com.immortalwrt.manager.ui.screens.system.SystemViewModel_HiltModules;
+import com.immortalwrt.manager.ui.screens.traffic.TrafficViewModel;
+import com.immortalwrt.manager.ui.screens.traffic.TrafficViewModel_HiltModules;
+import dagger.hilt.android.ActivityRetainedLifecycle;
+import dagger.hilt.android.ViewModelLifecycle;
+import dagger.hilt.android.internal.builders.ActivityComponentBuilder;
+import dagger.hilt.android.internal.builders.ActivityRetainedComponentBuilder;
+import dagger.hilt.android.internal.builders.FragmentComponentBuilder;
+import dagger.hilt.android.internal.builders.ServiceComponentBuilder;
+import dagger.hilt.android.internal.builders.ViewComponentBuilder;
+import dagger.hilt.android.internal.builders.ViewModelComponentBuilder;
+import dagger.hilt.android.internal.builders.ViewWithFragmentComponentBuilder;
+import dagger.hilt.android.internal.lifecycle.DefaultViewModelFactories;
+import dagger.hilt.android.internal.lifecycle.DefaultViewModelFactories_InternalFactoryFactory_Factory;
+import dagger.hilt.android.internal.managers.ActivityRetainedComponentManager_LifecycleModule_ProvideActivityRetainedLifecycleFactory;
+import dagger.hilt.android.internal.managers.SavedStateHandleHolder;
+import dagger.hilt.android.internal.modules.ApplicationContextModule;
+import dagger.hilt.android.internal.modules.ApplicationContextModule_ProvideContextFactory;
+import dagger.internal.DaggerGenerated;
+import dagger.internal.DoubleCheck;
+import dagger.internal.IdentifierNameString;
+import dagger.internal.KeepFieldType;
+import dagger.internal.LazyClassKeyMap;
+import dagger.internal.MapBuilder;
+import dagger.internal.Preconditions;
+import dagger.internal.Provider;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.processing.Generated;
+
+@DaggerGenerated
+@Generated(
+    value = "dagger.internal.codegen.ComponentProcessor",
+    comments = "https://dagger.dev"
+)
+@SuppressWarnings({
+    "unchecked",
+    "rawtypes",
+    "KotlinInternal",
+    "KotlinInternalInJava",
+    "cast"
+})
+public final class DaggerApp_HiltComponents_SingletonC {
+  private DaggerApp_HiltComponents_SingletonC() {
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static final class Builder {
+    private ApplicationContextModule applicationContextModule;
+
+    private Builder() {
+    }
+
+    public Builder applicationContextModule(ApplicationContextModule applicationContextModule) {
+      this.applicationContextModule = Preconditions.checkNotNull(applicationContextModule);
+      return this;
+    }
+
+    public App_HiltComponents.SingletonC build() {
+      Preconditions.checkBuilderRequirement(applicationContextModule, ApplicationContextModule.class);
+      return new SingletonCImpl(applicationContextModule);
+    }
+  }
+
+  private static final class ActivityRetainedCBuilder implements App_HiltComponents.ActivityRetainedC.Builder {
+    private final SingletonCImpl singletonCImpl;
+
+    private SavedStateHandleHolder savedStateHandleHolder;
+
+    private ActivityRetainedCBuilder(SingletonCImpl singletonCImpl) {
+      this.singletonCImpl = singletonCImpl;
+    }
+
+    @Override
+    public ActivityRetainedCBuilder savedStateHandleHolder(
+        SavedStateHandleHolder savedStateHandleHolder) {
+      this.savedStateHandleHolder = Preconditions.checkNotNull(savedStateHandleHolder);
+      return this;
+    }
+
+    @Override
+    public App_HiltComponents.ActivityRetainedC build() {
+      Preconditions.checkBuilderRequirement(savedStateHandleHolder, SavedStateHandleHolder.class);
+      return new ActivityRetainedCImpl(singletonCImpl, savedStateHandleHolder);
+    }
+  }
+
+  private static final class ActivityCBuilder implements App_HiltComponents.ActivityC.Builder {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private Activity activity;
+
+    private ActivityCBuilder(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+    }
+
+    @Override
+    public ActivityCBuilder activity(Activity activity) {
+      this.activity = Preconditions.checkNotNull(activity);
+      return this;
+    }
+
+    @Override
+    public App_HiltComponents.ActivityC build() {
+      Preconditions.checkBuilderRequirement(activity, Activity.class);
+      return new ActivityCImpl(singletonCImpl, activityRetainedCImpl, activity);
+    }
+  }
+
+  private static final class FragmentCBuilder implements App_HiltComponents.FragmentC.Builder {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ActivityCImpl activityCImpl;
+
+    private Fragment fragment;
+
+    private FragmentCBuilder(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl, ActivityCImpl activityCImpl) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+      this.activityCImpl = activityCImpl;
+    }
+
+    @Override
+    public FragmentCBuilder fragment(Fragment fragment) {
+      this.fragment = Preconditions.checkNotNull(fragment);
+      return this;
+    }
+
+    @Override
+    public App_HiltComponents.FragmentC build() {
+      Preconditions.checkBuilderRequirement(fragment, Fragment.class);
+      return new FragmentCImpl(singletonCImpl, activityRetainedCImpl, activityCImpl, fragment);
+    }
+  }
+
+  private static final class ViewWithFragmentCBuilder implements App_HiltComponents.ViewWithFragmentC.Builder {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ActivityCImpl activityCImpl;
+
+    private final FragmentCImpl fragmentCImpl;
+
+    private View view;
+
+    private ViewWithFragmentCBuilder(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl, ActivityCImpl activityCImpl,
+        FragmentCImpl fragmentCImpl) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+      this.activityCImpl = activityCImpl;
+      this.fragmentCImpl = fragmentCImpl;
+    }
+
+    @Override
+    public ViewWithFragmentCBuilder view(View view) {
+      this.view = Preconditions.checkNotNull(view);
+      return this;
+    }
+
+    @Override
+    public App_HiltComponents.ViewWithFragmentC build() {
+      Preconditions.checkBuilderRequirement(view, View.class);
+      return new ViewWithFragmentCImpl(singletonCImpl, activityRetainedCImpl, activityCImpl, fragmentCImpl, view);
+    }
+  }
+
+  private static final class ViewCBuilder implements App_HiltComponents.ViewC.Builder {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ActivityCImpl activityCImpl;
+
+    private View view;
+
+    private ViewCBuilder(SingletonCImpl singletonCImpl, ActivityRetainedCImpl activityRetainedCImpl,
+        ActivityCImpl activityCImpl) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+      this.activityCImpl = activityCImpl;
+    }
+
+    @Override
+    public ViewCBuilder view(View view) {
+      this.view = Preconditions.checkNotNull(view);
+      return this;
+    }
+
+    @Override
+    public App_HiltComponents.ViewC build() {
+      Preconditions.checkBuilderRequirement(view, View.class);
+      return new ViewCImpl(singletonCImpl, activityRetainedCImpl, activityCImpl, view);
+    }
+  }
+
+  private static final class ViewModelCBuilder implements App_HiltComponents.ViewModelC.Builder {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private SavedStateHandle savedStateHandle;
+
+    private ViewModelLifecycle viewModelLifecycle;
+
+    private ViewModelCBuilder(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+    }
+
+    @Override
+    public ViewModelCBuilder savedStateHandle(SavedStateHandle handle) {
+      this.savedStateHandle = Preconditions.checkNotNull(handle);
+      return this;
+    }
+
+    @Override
+    public ViewModelCBuilder viewModelLifecycle(ViewModelLifecycle viewModelLifecycle) {
+      this.viewModelLifecycle = Preconditions.checkNotNull(viewModelLifecycle);
+      return this;
+    }
+
+    @Override
+    public App_HiltComponents.ViewModelC build() {
+      Preconditions.checkBuilderRequirement(savedStateHandle, SavedStateHandle.class);
+      Preconditions.checkBuilderRequirement(viewModelLifecycle, ViewModelLifecycle.class);
+      return new ViewModelCImpl(singletonCImpl, activityRetainedCImpl, savedStateHandle, viewModelLifecycle);
+    }
+  }
+
+  private static final class ServiceCBuilder implements App_HiltComponents.ServiceC.Builder {
+    private final SingletonCImpl singletonCImpl;
+
+    private Service service;
+
+    private ServiceCBuilder(SingletonCImpl singletonCImpl) {
+      this.singletonCImpl = singletonCImpl;
+    }
+
+    @Override
+    public ServiceCBuilder service(Service service) {
+      this.service = Preconditions.checkNotNull(service);
+      return this;
+    }
+
+    @Override
+    public App_HiltComponents.ServiceC build() {
+      Preconditions.checkBuilderRequirement(service, Service.class);
+      return new ServiceCImpl(singletonCImpl, service);
+    }
+  }
+
+  private static final class ViewWithFragmentCImpl extends App_HiltComponents.ViewWithFragmentC {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ActivityCImpl activityCImpl;
+
+    private final FragmentCImpl fragmentCImpl;
+
+    private final ViewWithFragmentCImpl viewWithFragmentCImpl = this;
+
+    private ViewWithFragmentCImpl(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl, ActivityCImpl activityCImpl,
+        FragmentCImpl fragmentCImpl, View viewParam) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+      this.activityCImpl = activityCImpl;
+      this.fragmentCImpl = fragmentCImpl;
+
+
+    }
+  }
+
+  private static final class FragmentCImpl extends App_HiltComponents.FragmentC {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ActivityCImpl activityCImpl;
+
+    private final FragmentCImpl fragmentCImpl = this;
+
+    private FragmentCImpl(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl, ActivityCImpl activityCImpl,
+        Fragment fragmentParam) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+      this.activityCImpl = activityCImpl;
+
+
+    }
+
+    @Override
+    public DefaultViewModelFactories.InternalFactoryFactory getHiltInternalFactoryFactory() {
+      return activityCImpl.getHiltInternalFactoryFactory();
+    }
+
+    @Override
+    public ViewWithFragmentComponentBuilder viewWithFragmentComponentBuilder() {
+      return new ViewWithFragmentCBuilder(singletonCImpl, activityRetainedCImpl, activityCImpl, fragmentCImpl);
+    }
+  }
+
+  private static final class ViewCImpl extends App_HiltComponents.ViewC {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ActivityCImpl activityCImpl;
+
+    private final ViewCImpl viewCImpl = this;
+
+    private ViewCImpl(SingletonCImpl singletonCImpl, ActivityRetainedCImpl activityRetainedCImpl,
+        ActivityCImpl activityCImpl, View viewParam) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+      this.activityCImpl = activityCImpl;
+
+
+    }
+  }
+
+  private static final class ActivityCImpl extends App_HiltComponents.ActivityC {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ActivityCImpl activityCImpl = this;
+
+    private ActivityCImpl(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl, Activity activityParam) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+
+
+    }
+
+    @Override
+    public void injectMainActivity(MainActivity mainActivity) {
+    }
+
+    @Override
+    public DefaultViewModelFactories.InternalFactoryFactory getHiltInternalFactoryFactory() {
+      return DefaultViewModelFactories_InternalFactoryFactory_Factory.newInstance(getViewModelKeys(), new ViewModelCBuilder(singletonCImpl, activityRetainedCImpl));
+    }
+
+    @Override
+    public Map<Class<?>, Boolean> getViewModelKeys() {
+      return LazyClassKeyMap.<Boolean>of(MapBuilder.<String, Boolean>newMapBuilder(10).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_router_AddEditRouterViewModel, AddEditRouterViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_dashboard_DashboardViewModel, DashboardViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_devices_DevicesViewModel, DevicesViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_diagnostics_DiagnosticsViewModel, DiagnosticsViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_network_NetworkViewModel, NetworkViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_password_PasswordChangeViewModel, PasswordChangeViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_reboot_RebootViewModel, RebootViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_router_RouterListViewModel, RouterListViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_system_SystemViewModel, SystemViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_traffic_TrafficViewModel, TrafficViewModel_HiltModules.KeyModule.provide()).build());
+    }
+
+    @Override
+    public ViewModelComponentBuilder getViewModelComponentBuilder() {
+      return new ViewModelCBuilder(singletonCImpl, activityRetainedCImpl);
+    }
+
+    @Override
+    public FragmentComponentBuilder fragmentComponentBuilder() {
+      return new FragmentCBuilder(singletonCImpl, activityRetainedCImpl, activityCImpl);
+    }
+
+    @Override
+    public ViewComponentBuilder viewComponentBuilder() {
+      return new ViewCBuilder(singletonCImpl, activityRetainedCImpl, activityCImpl);
+    }
+
+    @IdentifierNameString
+    private static final class LazyClassKeyProvider {
+      static String com_immortalwrt_manager_ui_screens_system_SystemViewModel = "com.immortalwrt.manager.ui.screens.system.SystemViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_dashboard_DashboardViewModel = "com.immortalwrt.manager.ui.screens.dashboard.DashboardViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_reboot_RebootViewModel = "com.immortalwrt.manager.ui.screens.reboot.RebootViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_router_RouterListViewModel = "com.immortalwrt.manager.ui.screens.router.RouterListViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_traffic_TrafficViewModel = "com.immortalwrt.manager.ui.screens.traffic.TrafficViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_devices_DevicesViewModel = "com.immortalwrt.manager.ui.screens.devices.DevicesViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_router_AddEditRouterViewModel = "com.immortalwrt.manager.ui.screens.router.AddEditRouterViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_diagnostics_DiagnosticsViewModel = "com.immortalwrt.manager.ui.screens.diagnostics.DiagnosticsViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_network_NetworkViewModel = "com.immortalwrt.manager.ui.screens.network.NetworkViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_password_PasswordChangeViewModel = "com.immortalwrt.manager.ui.screens.password.PasswordChangeViewModel";
+
+      @KeepFieldType
+      SystemViewModel com_immortalwrt_manager_ui_screens_system_SystemViewModel2;
+
+      @KeepFieldType
+      DashboardViewModel com_immortalwrt_manager_ui_screens_dashboard_DashboardViewModel2;
+
+      @KeepFieldType
+      RebootViewModel com_immortalwrt_manager_ui_screens_reboot_RebootViewModel2;
+
+      @KeepFieldType
+      RouterListViewModel com_immortalwrt_manager_ui_screens_router_RouterListViewModel2;
+
+      @KeepFieldType
+      TrafficViewModel com_immortalwrt_manager_ui_screens_traffic_TrafficViewModel2;
+
+      @KeepFieldType
+      DevicesViewModel com_immortalwrt_manager_ui_screens_devices_DevicesViewModel2;
+
+      @KeepFieldType
+      AddEditRouterViewModel com_immortalwrt_manager_ui_screens_router_AddEditRouterViewModel2;
+
+      @KeepFieldType
+      DiagnosticsViewModel com_immortalwrt_manager_ui_screens_diagnostics_DiagnosticsViewModel2;
+
+      @KeepFieldType
+      NetworkViewModel com_immortalwrt_manager_ui_screens_network_NetworkViewModel2;
+
+      @KeepFieldType
+      PasswordChangeViewModel com_immortalwrt_manager_ui_screens_password_PasswordChangeViewModel2;
+    }
+  }
+
+  private static final class ViewModelCImpl extends App_HiltComponents.ViewModelC {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ViewModelCImpl viewModelCImpl = this;
+
+    private Provider<AddEditRouterViewModel> addEditRouterViewModelProvider;
+
+    private Provider<DashboardViewModel> dashboardViewModelProvider;
+
+    private Provider<DevicesViewModel> devicesViewModelProvider;
+
+    private Provider<DiagnosticsViewModel> diagnosticsViewModelProvider;
+
+    private Provider<NetworkViewModel> networkViewModelProvider;
+
+    private Provider<PasswordChangeViewModel> passwordChangeViewModelProvider;
+
+    private Provider<RebootViewModel> rebootViewModelProvider;
+
+    private Provider<RouterListViewModel> routerListViewModelProvider;
+
+    private Provider<SystemViewModel> systemViewModelProvider;
+
+    private Provider<TrafficViewModel> trafficViewModelProvider;
+
+    private ViewModelCImpl(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl, SavedStateHandle savedStateHandleParam,
+        ViewModelLifecycle viewModelLifecycleParam) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+
+      initialize(savedStateHandleParam, viewModelLifecycleParam);
+
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initialize(final SavedStateHandle savedStateHandleParam,
+        final ViewModelLifecycle viewModelLifecycleParam) {
+      this.addEditRouterViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
+      this.dashboardViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
+      this.devicesViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
+      this.diagnosticsViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
+      this.networkViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 4);
+      this.passwordChangeViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 5);
+      this.rebootViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 6);
+      this.routerListViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 7);
+      this.systemViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 8);
+      this.trafficViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 9);
+    }
+
+    @Override
+    public Map<Class<?>, javax.inject.Provider<ViewModel>> getHiltViewModelMap() {
+      return LazyClassKeyMap.<javax.inject.Provider<ViewModel>>of(MapBuilder.<String, javax.inject.Provider<ViewModel>>newMapBuilder(10).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_router_AddEditRouterViewModel, ((Provider) addEditRouterViewModelProvider)).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_dashboard_DashboardViewModel, ((Provider) dashboardViewModelProvider)).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_devices_DevicesViewModel, ((Provider) devicesViewModelProvider)).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_diagnostics_DiagnosticsViewModel, ((Provider) diagnosticsViewModelProvider)).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_network_NetworkViewModel, ((Provider) networkViewModelProvider)).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_password_PasswordChangeViewModel, ((Provider) passwordChangeViewModelProvider)).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_reboot_RebootViewModel, ((Provider) rebootViewModelProvider)).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_router_RouterListViewModel, ((Provider) routerListViewModelProvider)).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_system_SystemViewModel, ((Provider) systemViewModelProvider)).put(LazyClassKeyProvider.com_immortalwrt_manager_ui_screens_traffic_TrafficViewModel, ((Provider) trafficViewModelProvider)).build());
+    }
+
+    @Override
+    public Map<Class<?>, Object> getHiltViewModelAssistedMap() {
+      return Collections.<Class<?>, Object>emptyMap();
+    }
+
+    @IdentifierNameString
+    private static final class LazyClassKeyProvider {
+      static String com_immortalwrt_manager_ui_screens_diagnostics_DiagnosticsViewModel = "com.immortalwrt.manager.ui.screens.diagnostics.DiagnosticsViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_devices_DevicesViewModel = "com.immortalwrt.manager.ui.screens.devices.DevicesViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_reboot_RebootViewModel = "com.immortalwrt.manager.ui.screens.reboot.RebootViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_network_NetworkViewModel = "com.immortalwrt.manager.ui.screens.network.NetworkViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_password_PasswordChangeViewModel = "com.immortalwrt.manager.ui.screens.password.PasswordChangeViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_router_RouterListViewModel = "com.immortalwrt.manager.ui.screens.router.RouterListViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_traffic_TrafficViewModel = "com.immortalwrt.manager.ui.screens.traffic.TrafficViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_dashboard_DashboardViewModel = "com.immortalwrt.manager.ui.screens.dashboard.DashboardViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_system_SystemViewModel = "com.immortalwrt.manager.ui.screens.system.SystemViewModel";
+
+      static String com_immortalwrt_manager_ui_screens_router_AddEditRouterViewModel = "com.immortalwrt.manager.ui.screens.router.AddEditRouterViewModel";
+
+      @KeepFieldType
+      DiagnosticsViewModel com_immortalwrt_manager_ui_screens_diagnostics_DiagnosticsViewModel2;
+
+      @KeepFieldType
+      DevicesViewModel com_immortalwrt_manager_ui_screens_devices_DevicesViewModel2;
+
+      @KeepFieldType
+      RebootViewModel com_immortalwrt_manager_ui_screens_reboot_RebootViewModel2;
+
+      @KeepFieldType
+      NetworkViewModel com_immortalwrt_manager_ui_screens_network_NetworkViewModel2;
+
+      @KeepFieldType
+      PasswordChangeViewModel com_immortalwrt_manager_ui_screens_password_PasswordChangeViewModel2;
+
+      @KeepFieldType
+      RouterListViewModel com_immortalwrt_manager_ui_screens_router_RouterListViewModel2;
+
+      @KeepFieldType
+      TrafficViewModel com_immortalwrt_manager_ui_screens_traffic_TrafficViewModel2;
+
+      @KeepFieldType
+      DashboardViewModel com_immortalwrt_manager_ui_screens_dashboard_DashboardViewModel2;
+
+      @KeepFieldType
+      SystemViewModel com_immortalwrt_manager_ui_screens_system_SystemViewModel2;
+
+      @KeepFieldType
+      AddEditRouterViewModel com_immortalwrt_manager_ui_screens_router_AddEditRouterViewModel2;
+    }
+
+    private static final class SwitchingProvider<T> implements Provider<T> {
+      private final SingletonCImpl singletonCImpl;
+
+      private final ActivityRetainedCImpl activityRetainedCImpl;
+
+      private final ViewModelCImpl viewModelCImpl;
+
+      private final int id;
+
+      SwitchingProvider(SingletonCImpl singletonCImpl, ActivityRetainedCImpl activityRetainedCImpl,
+          ViewModelCImpl viewModelCImpl, int id) {
+        this.singletonCImpl = singletonCImpl;
+        this.activityRetainedCImpl = activityRetainedCImpl;
+        this.viewModelCImpl = viewModelCImpl;
+        this.id = id;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T get() {
+        switch (id) {
+          case 0: // com.immortalwrt.manager.ui.screens.router.AddEditRouterViewModel 
+          return (T) new AddEditRouterViewModel(singletonCImpl.routerRepositoryImplProvider.get());
+
+          case 1: // com.immortalwrt.manager.ui.screens.dashboard.DashboardViewModel 
+          return (T) new DashboardViewModel(singletonCImpl.systemRepositoryImplProvider.get(), singletonCImpl.routerRepositoryImplProvider.get());
+
+          case 2: // com.immortalwrt.manager.ui.screens.devices.DevicesViewModel 
+          return (T) new DevicesViewModel(singletonCImpl.deviceRepositoryImplProvider.get());
+
+          case 3: // com.immortalwrt.manager.ui.screens.diagnostics.DiagnosticsViewModel 
+          return (T) new DiagnosticsViewModel(singletonCImpl.routerRepositoryImplProvider.get(), singletonCImpl.capabilityRepositoryImplProvider.get());
+
+          case 4: // com.immortalwrt.manager.ui.screens.network.NetworkViewModel 
+          return (T) new NetworkViewModel(singletonCImpl.networkRepositoryImplProvider.get());
+
+          case 5: // com.immortalwrt.manager.ui.screens.password.PasswordChangeViewModel 
+          return (T) new PasswordChangeViewModel(singletonCImpl.ubusJsonRpcClientProvider.get(), singletonCImpl.sessionManagerImplProvider.get(), singletonCImpl.androidKeystoreSecretStoreProvider.get(), singletonCImpl.routerRepositoryImplProvider.get());
+
+          case 6: // com.immortalwrt.manager.ui.screens.reboot.RebootViewModel 
+          return (T) new RebootViewModel(singletonCImpl.ubusJsonRpcClientProvider.get(), singletonCImpl.sessionManagerImplProvider.get(), singletonCImpl.androidKeystoreSecretStoreProvider.get(), singletonCImpl.routerRepositoryImplProvider.get());
+
+          case 7: // com.immortalwrt.manager.ui.screens.router.RouterListViewModel 
+          return (T) new RouterListViewModel(singletonCImpl.routerRepositoryImplProvider.get());
+
+          case 8: // com.immortalwrt.manager.ui.screens.system.SystemViewModel 
+          return (T) new SystemViewModel(singletonCImpl.systemRepositoryImplProvider.get(), singletonCImpl.capabilityRepositoryImplProvider.get());
+
+          case 9: // com.immortalwrt.manager.ui.screens.traffic.TrafficViewModel 
+          return (T) new TrafficViewModel(singletonCImpl.ubusJsonRpcClientProvider.get(), singletonCImpl.sessionManagerImplProvider.get(), singletonCImpl.routerRepositoryImplProvider.get(), singletonCImpl.networkRepositoryImplProvider.get());
+
+          default: throw new AssertionError(id);
+        }
+      }
+    }
+  }
+
+  private static final class ActivityRetainedCImpl extends App_HiltComponents.ActivityRetainedC {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl = this;
+
+    private Provider<ActivityRetainedLifecycle> provideActivityRetainedLifecycleProvider;
+
+    private ActivityRetainedCImpl(SingletonCImpl singletonCImpl,
+        SavedStateHandleHolder savedStateHandleHolderParam) {
+      this.singletonCImpl = singletonCImpl;
+
+      initialize(savedStateHandleHolderParam);
+
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initialize(final SavedStateHandleHolder savedStateHandleHolderParam) {
+      this.provideActivityRetainedLifecycleProvider = DoubleCheck.provider(new SwitchingProvider<ActivityRetainedLifecycle>(singletonCImpl, activityRetainedCImpl, 0));
+    }
+
+    @Override
+    public ActivityComponentBuilder activityComponentBuilder() {
+      return new ActivityCBuilder(singletonCImpl, activityRetainedCImpl);
+    }
+
+    @Override
+    public ActivityRetainedLifecycle getActivityRetainedLifecycle() {
+      return provideActivityRetainedLifecycleProvider.get();
+    }
+
+    private static final class SwitchingProvider<T> implements Provider<T> {
+      private final SingletonCImpl singletonCImpl;
+
+      private final ActivityRetainedCImpl activityRetainedCImpl;
+
+      private final int id;
+
+      SwitchingProvider(SingletonCImpl singletonCImpl, ActivityRetainedCImpl activityRetainedCImpl,
+          int id) {
+        this.singletonCImpl = singletonCImpl;
+        this.activityRetainedCImpl = activityRetainedCImpl;
+        this.id = id;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T get() {
+        switch (id) {
+          case 0: // dagger.hilt.android.ActivityRetainedLifecycle 
+          return (T) ActivityRetainedComponentManager_LifecycleModule_ProvideActivityRetainedLifecycleFactory.provideActivityRetainedLifecycle();
+
+          default: throw new AssertionError(id);
+        }
+      }
+    }
+  }
+
+  private static final class ServiceCImpl extends App_HiltComponents.ServiceC {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ServiceCImpl serviceCImpl = this;
+
+    private ServiceCImpl(SingletonCImpl singletonCImpl, Service serviceParam) {
+      this.singletonCImpl = singletonCImpl;
+
+
+    }
+  }
+
+  private static final class SingletonCImpl extends App_HiltComponents.SingletonC {
+    private final ApplicationContextModule applicationContextModule;
+
+    private final SingletonCImpl singletonCImpl = this;
+
+    private Provider<AppDatabase> provideDatabaseProvider;
+
+    private Provider<AndroidKeystoreSecretStore> androidKeystoreSecretStoreProvider;
+
+    private Provider<NetworkMonitor> networkMonitorProvider;
+
+    private Provider<EndpointDiscovery> endpointDiscoveryProvider;
+
+    private Provider<CertificateFingerprintStore> certificateFingerprintStoreProvider;
+
+    private Provider<CertificateTrustManager> certificateTrustManagerProvider;
+
+    private Provider<RouterRepositoryImpl> routerRepositoryImplProvider;
+
+    private Provider<RouterOkHttpClientFactory> routerOkHttpClientFactoryProvider;
+
+    private Provider<UbusCallIdGenerator> ubusCallIdGeneratorProvider;
+
+    private Provider<UbusJsonRpcClient> ubusJsonRpcClientProvider;
+
+    private Provider<SystemRepositoryImpl> systemRepositoryImplProvider;
+
+    private Provider<DeviceRepositoryImpl> deviceRepositoryImplProvider;
+
+    private Provider<CapabilityRepositoryImpl> capabilityRepositoryImplProvider;
+
+    private Provider<NetworkRemoteDataSource> networkRemoteDataSourceProvider;
+
+    private Provider<NetworkRepositoryImpl> networkRepositoryImplProvider;
+
+    private Provider<SessionManagerImpl> sessionManagerImplProvider;
+
+    private SingletonCImpl(ApplicationContextModule applicationContextModuleParam) {
+      this.applicationContextModule = applicationContextModuleParam;
+      initialize(applicationContextModuleParam);
+
+    }
+
+    private RouterDao routerDao() {
+      return DatabaseModule_ProvideRouterDaoFactory.provideRouterDao(provideDatabaseProvider.get());
+    }
+
+    private RouterEnvironmentDao routerEnvironmentDao() {
+      return DatabaseModule_ProvideRouterEnvironmentDaoFactory.provideRouterEnvironmentDao(provideDatabaseProvider.get());
+    }
+
+    private RouterCapabilityDao routerCapabilityDao() {
+      return DatabaseModule_ProvideRouterCapabilityDaoFactory.provideRouterCapabilityDao(provideDatabaseProvider.get());
+    }
+
+    private RouterCacheDao routerCacheDao() {
+      return DatabaseModule_ProvideRouterCacheDaoFactory.provideRouterCacheDao(provideDatabaseProvider.get());
+    }
+
+    private DiagnosticEventDao diagnosticEventDao() {
+      return DatabaseModule_ProvideDiagnosticEventDaoFactory.provideDiagnosticEventDao(provideDatabaseProvider.get());
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initialize(final ApplicationContextModule applicationContextModuleParam) {
+      this.provideDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<AppDatabase>(singletonCImpl, 1));
+      this.androidKeystoreSecretStoreProvider = DoubleCheck.provider(new SwitchingProvider<AndroidKeystoreSecretStore>(singletonCImpl, 2));
+      this.networkMonitorProvider = DoubleCheck.provider(new SwitchingProvider<NetworkMonitor>(singletonCImpl, 4));
+      this.endpointDiscoveryProvider = DoubleCheck.provider(new SwitchingProvider<EndpointDiscovery>(singletonCImpl, 3));
+      this.certificateFingerprintStoreProvider = DoubleCheck.provider(new SwitchingProvider<CertificateFingerprintStore>(singletonCImpl, 6));
+      this.certificateTrustManagerProvider = DoubleCheck.provider(new SwitchingProvider<CertificateTrustManager>(singletonCImpl, 5));
+      this.routerRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<RouterRepositoryImpl>(singletonCImpl, 0));
+      this.routerOkHttpClientFactoryProvider = DoubleCheck.provider(new SwitchingProvider<RouterOkHttpClientFactory>(singletonCImpl, 9));
+      this.ubusCallIdGeneratorProvider = DoubleCheck.provider(new SwitchingProvider<UbusCallIdGenerator>(singletonCImpl, 10));
+      this.ubusJsonRpcClientProvider = DoubleCheck.provider(new SwitchingProvider<UbusJsonRpcClient>(singletonCImpl, 8));
+      this.systemRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<SystemRepositoryImpl>(singletonCImpl, 7));
+      this.deviceRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<DeviceRepositoryImpl>(singletonCImpl, 11));
+      this.capabilityRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<CapabilityRepositoryImpl>(singletonCImpl, 12));
+      this.networkRemoteDataSourceProvider = DoubleCheck.provider(new SwitchingProvider<NetworkRemoteDataSource>(singletonCImpl, 14));
+      this.networkRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<NetworkRepositoryImpl>(singletonCImpl, 13));
+      this.sessionManagerImplProvider = DoubleCheck.provider(new SwitchingProvider<SessionManagerImpl>(singletonCImpl, 15));
+    }
+
+    @Override
+    public void injectApp(App app) {
+    }
+
+    @Override
+    public Set<Boolean> getDisableFragmentGetContextFix() {
+      return Collections.<Boolean>emptySet();
+    }
+
+    @Override
+    public ActivityRetainedComponentBuilder retainedComponentBuilder() {
+      return new ActivityRetainedCBuilder(singletonCImpl);
+    }
+
+    @Override
+    public ServiceComponentBuilder serviceComponentBuilder() {
+      return new ServiceCBuilder(singletonCImpl);
+    }
+
+    private static final class SwitchingProvider<T> implements Provider<T> {
+      private final SingletonCImpl singletonCImpl;
+
+      private final int id;
+
+      SwitchingProvider(SingletonCImpl singletonCImpl, int id) {
+        this.singletonCImpl = singletonCImpl;
+        this.id = id;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T get() {
+        switch (id) {
+          case 0: // com.immortalwrt.manager.data.repository.RouterRepositoryImpl 
+          return (T) new RouterRepositoryImpl(singletonCImpl.routerDao(), singletonCImpl.routerEnvironmentDao(), singletonCImpl.routerCapabilityDao(), singletonCImpl.routerCacheDao(), singletonCImpl.diagnosticEventDao(), singletonCImpl.androidKeystoreSecretStoreProvider.get(), singletonCImpl.endpointDiscoveryProvider.get(), singletonCImpl.certificateTrustManagerProvider.get(), singletonCImpl.certificateFingerprintStoreProvider.get());
+
+          case 1: // com.immortalwrt.manager.data.local.AppDatabase 
+          return (T) DatabaseModule_ProvideDatabaseFactory.provideDatabase(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 2: // com.immortalwrt.manager.core.security.AndroidKeystoreSecretStore 
+          return (T) new AndroidKeystoreSecretStore(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 3: // com.immortalwrt.manager.core.network.EndpointDiscovery 
+          return (T) new EndpointDiscovery(singletonCImpl.networkMonitorProvider.get());
+
+          case 4: // com.immortalwrt.manager.core.network.NetworkMonitor 
+          return (T) new NetworkMonitor(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 5: // com.immortalwrt.manager.core.network.CertificateTrustManager 
+          return (T) new CertificateTrustManager(singletonCImpl.certificateFingerprintStoreProvider.get());
+
+          case 6: // com.immortalwrt.manager.core.network.CertificateFingerprintStore 
+          return (T) new CertificateFingerprintStore();
+
+          case 7: // com.immortalwrt.manager.data.repository.SystemRepositoryImpl 
+          return (T) new SystemRepositoryImpl(singletonCImpl.ubusJsonRpcClientProvider.get(), singletonCImpl.routerCacheDao());
+
+          case 8: // com.immortalwrt.manager.core.network.UbusJsonRpcClient 
+          return (T) new UbusJsonRpcClient(singletonCImpl.routerOkHttpClientFactoryProvider.get(), singletonCImpl.ubusCallIdGeneratorProvider.get());
+
+          case 9: // com.immortalwrt.manager.core.network.RouterOkHttpClientFactory 
+          return (T) new RouterOkHttpClientFactory(singletonCImpl.certificateTrustManagerProvider.get(), singletonCImpl.certificateFingerprintStoreProvider.get());
+
+          case 10: // com.immortalwrt.manager.core.network.UbusCallIdGenerator 
+          return (T) new UbusCallIdGenerator();
+
+          case 11: // com.immortalwrt.manager.data.repository.DeviceRepositoryImpl 
+          return (T) new DeviceRepositoryImpl(singletonCImpl.ubusJsonRpcClientProvider.get(), singletonCImpl.routerCacheDao());
+
+          case 12: // com.immortalwrt.manager.data.repository.CapabilityRepositoryImpl 
+          return (T) new CapabilityRepositoryImpl(singletonCImpl.routerCapabilityDao(), singletonCImpl.routerEnvironmentDao(), singletonCImpl.ubusJsonRpcClientProvider.get());
+
+          case 13: // com.immortalwrt.manager.data.repository.NetworkRepositoryImpl 
+          return (T) new NetworkRepositoryImpl(singletonCImpl.networkRemoteDataSourceProvider.get(), singletonCImpl.routerCacheDao());
+
+          case 14: // com.immortalwrt.manager.data.remote.NetworkRemoteDataSource 
+          return (T) new NetworkRemoteDataSource(singletonCImpl.ubusJsonRpcClientProvider.get());
+
+          case 15: // com.immortalwrt.manager.core.session.SessionManagerImpl 
+          return (T) new SessionManagerImpl(singletonCImpl.ubusJsonRpcClientProvider.get());
+
+          default: throw new AssertionError(id);
+        }
+      }
+    }
+  }
+}
